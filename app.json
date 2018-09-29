@@ -1,0 +1,19 @@
+{
+  "name": "shiori-tripto-api",
+  "description": "trip nabi",
+  "scripts": {
+  },
+  "env": {
+    "dev": {
+      "generator": "secret"
+    }
+  },
+  "formation": {
+  },
+  "addons": [
+
+  ],
+  "buildpacks": [
+
+  ]
+}
