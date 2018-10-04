@@ -100,7 +100,7 @@ def message_text(event):
                 redis.delete(Key)
             line_bot_api.reply_message(
                 event.reply_token, 
-                TextSendMessage(text='旅のしおりの作成: ' + profile.display_name) +'さん、今回の目的地はどこですか？')
+                TextSendMessage(text='旅のしおりの作成: ' + profile.display_name +'さん、今回の目的地はどこですか？'))
             redis.set(Key, 'ask-destination')
         elif text == 'やめる':
             logger.info('Terminate shiori')
@@ -108,19 +108,19 @@ def message_text(event):
                 redis.delete(Key)
             line_bot_api.reply_message(
                 event.reply_token, 
-                TextSendMessage(text='旅のしおりの作成: ' + profile.display_name) +'さん、破棄しました')
+                TextSendMessage(text='旅のしおりの作成: ' + profile.display_name +'さん、破棄しました'))
         else:
             if state == 'ask-destination':
                 logger.info('shiori:ask-destination')
                 line_bot_api.reply_message(
                     event.reply_token, 
-                    TextSendMessage(text='旅のしおりの作成: ' + profile.display_name) +'さん、出発日はいつですか？')
+                    TextSendMessage(text='旅のしおりの作成: ' + profile.display_name +'さん、出発日はいつですか？'))
                 redis.set(Key, 'ask-startdate')
             elif state == 'ask-startdate':
                 logger.info('shiori:ask-startdate')
                 line_bot_api.reply_message(
                     event.reply_token, 
-                    TextSendMessage(text='旅のしおりの作成: ' + profile.display_name) +'さん、作成しました')
+                    TextSendMessage(text='旅のしおりの作成: ' + profile.display_name +'さん、作成しました'))
                 redis.delete(Key)
             else:
                 logger.info('shiori:unknown-state')
