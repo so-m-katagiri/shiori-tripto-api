@@ -92,8 +92,9 @@ def message_text(event):
         logger.info('profile:' + profile.display_name)
         Key = event.source.user_id + '_shiori_state'
         state = redis.get(Key)
-        if state != None:
-            logger.info('current state:' + state.decode())
+        if state == None:
+            redis.set(Key, '')
+        logger.info('current state:' + state.decode())
 
         if text == '新しい旅のしおり':
             logger.info('Start shiori')
