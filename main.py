@@ -91,7 +91,7 @@ def message_text(event):
         profile = line_bot_api.get_profile(event.source.user_id)
         logger.info('profile:' + profile.display_name)
         Key = event.source.user_id + '_shiori_state'
-        state = redis.get(Key) or''
+        state = redis.get(Key)
         logger.info('current state:' + state)
 
         if text == '新しい旅のしおり':
