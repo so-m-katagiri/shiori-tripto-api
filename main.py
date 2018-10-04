@@ -92,7 +92,7 @@ def message_text(event):
         logger.info('profile:' + profile.display_name)
         Key = event.source.user_id + '_shiori_state'
         state = redis.get(Key)
-        logger.info('current state:' + state)
+        logger.info('current state:' + state.decode())
 
         if text == '新しい旅のしおり':
             logger.info('Start shiori')
@@ -110,13 +110,13 @@ def message_text(event):
                 event.reply_token, 
                 TextSendMessage(text='旅のしおりの作成: ' + profile.display_name +'さん、破棄しました'))
         else:
-            if state == 'ask-destination':
+            if state.decode() == 'ask-destination':
                 logger.info('shiori:ask-destination')
                 line_bot_api.reply_message(
                     event.reply_token, 
                     TextSendMessage(text='旅のしおりの作成: ' + profile.display_name +'さん、出発日はいつですか？'))
                 redis.set(Key, 'ask-startdate')
-            elif state == 'ask-startdate':
+            elif state.decode() == 'ask-startdate':
                 logger.info('shiori:ask-startdate')
                 line_bot_api.reply_message(
                     event.reply_token, 
