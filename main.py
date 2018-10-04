@@ -16,6 +16,9 @@ import os
 import sys
 from argparse import ArgumentParser
 
+import redis
+import psycopg2
+
 from flask import Flask, request, abort
 from linebot import (
     LineBotApi, WebhookHandler
@@ -25,9 +28,26 @@ from linebot.exceptions import (
 )
 from linebot.models import (
     MessageEvent, TextMessage, TextSendMessage,
+    SourceUser, SourceGroup, SourceRoom,
+    TemplateSendMessage, ConfirmTemplate, MessageAction,
+    ButtonsTemplate, ImageCarouselTemplate, ImageCarouselColumn, URIAction,
+    PostbackAction, DatetimePickerAction,
+    CameraAction, CameraRollAction, LocationAction,
+    CarouselTemplate, CarouselColumn, PostbackEvent,
+    StickerMessage, StickerSendMessage, LocationMessage, LocationSendMessage,
+    ImageMessage, VideoMessage, AudioMessage, FileMessage,
+    UnfollowEvent, FollowEvent, JoinEvent, LeaveEvent, BeaconEvent,
+    FlexSendMessage, BubbleContainer, ImageComponent, BoxComponent,
+    TextComponent, SpacerComponent, IconComponent, ButtonComponent,
+    SeparatorComponent, QuickReply, QuickReplyButton
 )
 
+command_char = os.getenv('COMMAND_CHAR', ".")
+
 app = Flask(__name__)
+
+redis = redis.from_url(os.environ['REDIS_URL'])
+conn = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require')
 
 # get channel_secret and channel_access_token from your environment variable
 channel_secret = os.getenv('LINE_CHANNEL_SECRET', None)
@@ -63,10 +83,42 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def message_text(event):
-    line_bot_api.reply_message(
-        event.reply_token,
-        TextSendMessage(text=event.message.text)
-    )
+    text = event.message.text
+    
+    if isinstance(event.source, SourceUser):
+        profile = line_bot_api.get_profile(event.source.user_id)
+        Key = event.source.user_id + '_shiori_state'
+        state = redis.get(Key) or''
+
+        if text == '新しい旅のしおり':
+            if state != ''
+                redis.delete(Key)
+            line_bot_api.reply_message(
+                event.reply_token, 
+                TextSendMessage(text='旅のしおりの作成: ' + profile.display_name) +'さん、今回の目的地はどこですか？')
+            redis.set(Key, 'ask-destination')
+        elif text == 'おわり':
+            if state != ''
+                redis.delete(Key)
+        else:
+            if state == 'ask-destination':
+                line_bot_api.reply_message(
+                    event.reply_token, 
+                    TextSendMessage(text='旅のしおりの作成: ' + profile.display_name) +'さん、出発日はいつですか？')
+                redis.set(Key, 'ask-startdate')
+            elif state == 'ask-startdate':
+                line_bot_api.reply_message(
+                    event.reply_token, 
+                    TextSendMessage(text='旅のしおりの作成: ' + profile.display_name) +'さん、作成しました')
+                redis.delete(Key)
+    #elif isinstance(event.source, SourceGroup):
+    #elif isinstance(event.source, SourceRoom):
+    else:
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=event.message.text)
+        )
+
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
