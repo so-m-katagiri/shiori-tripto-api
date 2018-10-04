@@ -84,7 +84,6 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def message_text(event):
-    print(datetime.now().strftime("%Y/%m/%d %H:%M:%S"), "start", func.__name__)
     text = event.message.text
     
     if isinstance(event.source, SourceUser):
