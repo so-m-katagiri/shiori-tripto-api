@@ -14,6 +14,7 @@
 
 import os
 import sys
+import logging
 from argparse import ArgumentParser
 
 import redis
@@ -45,7 +46,7 @@ from linebot.models import (
 command_char = os.getenv('COMMAND_CHAR', ".")
 
 app = Flask(__name__)
-
+logger = logging.getLogger(__name__)
 redis = redis.from_url(os.environ['REDIS_URL'])
 conn = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require')
 
@@ -86,18 +87,23 @@ def message_text(event):
     text = event.message.text
     
     if isinstance(event.source, SourceUser):
+        logger.info('SourceUser')
         profile = line_bot_api.get_profile(event.source.user_id)
+        logger.info('profile:' + profile.display_name)
         Key = event.source.user_id + '_shiori_state'
         state = redis.get(Key) or''
+        logger.info('current state:' + state)
 
         if text == '新しい旅のしおり':
+            logger.info('Start shiori')
             if state != '':
                 redis.delete(Key)
             line_bot_api.reply_message(
                 event.reply_token, 
                 TextSendMessage(text='旅のしおりの作成: ' + profile.display_name) +'さん、今回の目的地はどこですか？')
             redis.set(Key, 'ask-destination')
-        elif text == 'おわり':
+        elif text == 'やめる':
+            logger.info('Terminate shiori')
             if state != '':
                 redis.delete(Key)
             line_bot_api.reply_message(
@@ -105,16 +111,19 @@ def message_text(event):
                 TextSendMessage(text='旅のしおりの作成: ' + profile.display_name) +'さん、破棄しました')
         else:
             if state == 'ask-destination':
+                logger.info('shiori:ask-destination')
                 line_bot_api.reply_message(
                     event.reply_token, 
                     TextSendMessage(text='旅のしおりの作成: ' + profile.display_name) +'さん、出発日はいつですか？')
                 redis.set(Key, 'ask-startdate')
             elif state == 'ask-startdate':
+                logger.info('shiori:ask-startdate')
                 line_bot_api.reply_message(
                     event.reply_token, 
                     TextSendMessage(text='旅のしおりの作成: ' + profile.display_name) +'さん、作成しました')
                 redis.delete(Key)
             else:
+                logger.info('shiori:unknown-state')
                 line_bot_api.reply_message(
                     event.reply_token,
                     TextSendMessage(text=event.message.text)
@@ -122,6 +131,7 @@ def message_text(event):
     #elif isinstance(event.source, SourceGroup):
     #elif isinstance(event.source, SourceRoom):
     else:
+        logger.info('Echo')
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=event.message.text)
