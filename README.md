@@ -2,7 +2,7 @@
 
 
 ## redis
-<user_id>_shiori_state
+KEY:<user_id>_shiori_state
 
 |状態|説明|
 |:--|:--|
