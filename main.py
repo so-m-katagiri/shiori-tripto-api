@@ -94,6 +94,7 @@ def message_text(event):
         state = redis.get(Key)
         if state == None:
             redis.set(Key, '')
+            redis.get(Key)
         logger.info('current state:' + state.decode())
 
         if text == '新しい旅のしおり':
