@@ -91,11 +91,13 @@ def message_text(event):
         state = redis.get(Key) or''
 
         if text == '新しい旅のしおり':
-            if state != ''
+            if state != '':
                 redis.delete(Key)
+
             line_bot_api.reply_message(
                 event.reply_token, 
                 TextSendMessage(text='旅のしおりの作成: ' + profile.display_name) +'さん、今回の目的地はどこですか？')
+                
             redis.set(Key, 'ask-destination')
         elif text == 'おわり':
             if state != ''
