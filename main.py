@@ -93,15 +93,16 @@ def message_text(event):
         if text == '新しい旅のしおり':
             if state != '':
                 redis.delete(Key)
-
             line_bot_api.reply_message(
                 event.reply_token, 
                 TextSendMessage(text='旅のしおりの作成: ' + profile.display_name) +'さん、今回の目的地はどこですか？')
-                
             redis.set(Key, 'ask-destination')
         elif text == 'おわり':
             if state != ''
                 redis.delete(Key)
+            line_bot_api.reply_message(
+                event.reply_token, 
+                TextSendMessage(text='旅のしおりの作成: ' + profile.display_name) +'さん、破棄しました')
         else:
             if state == 'ask-destination':
                 line_bot_api.reply_message(
@@ -113,6 +114,11 @@ def message_text(event):
                     event.reply_token, 
                     TextSendMessage(text='旅のしおりの作成: ' + profile.display_name) +'さん、作成しました')
                 redis.delete(Key)
+            else:
+                line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(text=event.message.text)
+                )    
     #elif isinstance(event.source, SourceGroup):
     #elif isinstance(event.source, SourceRoom):
     else:
